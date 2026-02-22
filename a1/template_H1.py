@@ -365,11 +365,11 @@ def reverse(D, i, k):
     temp = []
 
     # Remove k items starting at index i
-    for id in range(k):
+    for _ in range(k):
         temp.append(D.delete_at(i))
     
-    for id in temp[::-1]:
-        D.insert_at(i, id)
+    for x in temp:
+        D.insert_at(i, x)
 
     return None
 
@@ -564,7 +564,7 @@ def find_string(strings, parts):
         end = parts[idx][1] 
 
         # Copy characters from s[start] till s[end-1]
-        for pos in range(start, end):
+        for pos in range(start, end + 1):
             results_chars.append(s[pos])
 
     # Combins all collected characters into final string
