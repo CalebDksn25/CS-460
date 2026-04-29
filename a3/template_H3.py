@@ -136,9 +136,9 @@ def q1_2(graph: UGraph, N):
 #
 # Include comments on key lines of code to demonstrate your comprehension.
 #
-# AI Tool Used: <tool name or "None">
-# Interaction: <description of how the AI tool was used, e.g., prompts given>
-# Verification: <how you verified the correctness of the AI-generated code>
+# AI Tool Used: <Claue Opus 4.7>
+# Interaction: <I asked how I would implement a queue in Python and ti gave me the correct syntax for using a deque from the collections module. I also asked it to explain the BFS algorithm and it provided a clear explanation of how it works.>
+# Verification: <I tested the code on a small graph and compared the output to the expected BFS order, which confirmed that the implementation was correct.>
 def q2(graph: UGraph, N):
     # Track the visited status of each vertex
     visited = [False] * N
@@ -193,7 +193,27 @@ def q2(graph: UGraph, N):
 # Interaction: <description of how the AI tool was used, e.g., prompts given>
 # Verification: <how you verified the correctness of the AI-generated code>
 def q3(graph: DGraph, N):
-    pass
+    # Check if everyone is reachable FROM node 0 in original graph
+    result1 = q1_1(graph, N) # Reuse 1.1
+
+    if len(result1) != N:
+        return False
+    
+    # Build the transpose
+    reversed_edges = []
+    for u in range(N):
+        for v in graph.adjList[u]:
+            reversed_edges.append((v, u))
+
+    reversed_graph = DGraph(reversed_edges, N)
+
+    # Check if everyone is reachable FROM node 0 in reversed graph
+    result2 = q1_1(reversed_graph, N) # Reuse 1.1
+    if len(result2) != N:
+        return False
+    
+    # Both Conditions satisfied, so the graph is strongly connected
+    return True
 
 
 # ============================================================================
