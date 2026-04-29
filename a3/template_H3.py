@@ -279,11 +279,11 @@ class Graph:
     # node1, node2 -> integers (node1 < node2 guaranteed by caller)
     # weight       -> integer, cost of the edge
     #
-    # AI Tool Used: <tool name or "None">
+    # AI Tool Used: <None>
     # Interaction: <description of how the AI tool was used, e.g., prompts given>
     # Verification: <how you verified the correctness of the AI-generated code>
     def add_edge(self, node1, node2, weight):
-        pass
+        self.m_graph.append([node1, node2, weight])
 
     # Q5.2 — find_subtree (0 points autograder / 5 points manual grading)
     # Recursively find the root of the subtree containing node i.
@@ -291,11 +291,16 @@ class Graph:
     # i      -> integer, node whose root to find
     # return -> integer, root of the subtree containing i
     #
-    # AI Tool Used: <tool name or "None">
+    # AI Tool Used: <None>
     # Interaction: <description of how the AI tool was used, e.g., prompts given>
     # Verification: <how you verified the correctness of the AI-generated code>
     def find_subtree(self, parent, i):
-        pass
+        # Base Case: i is its own parent -> i is the root of its subtree
+        if parent[i] == i:
+            return i
+        else:
+        # Recursive Case: climb one step up the tree
+            return self.find_subtree(parent, parent[i])
 
     # Q5.3 — connect_subtrees (0 points autograder / 5 points manual grading)
     # Union by size: find the roots of x and y, then attach the smaller
@@ -308,7 +313,20 @@ class Graph:
     # Interaction: <description of how the AI tool was used, e.g., prompts given>
     # Verification: <how you verified the correctness of the AI-generated code>
     def connect_subtrees(self, parent, subtree_sizes, x, y):
-        pass
+        # Find the roots of the subtrees containing x and y
+        root_x = self.find_subtree(parent, x)
+        root_y = self.find_subtree(parent, y)
+
+        # Attatch smaller under larger
+        if subtree_sizes[root_x] < subtree_sizes[root_y]:
+            # x's tree is smaller -> make root_y the new parent of root_x
+            parent[root_x] = root_y
+            subtree_sizes[root_y] += subtree_sizes[root_x]
+        else:
+            # y's tree is smaller (or equal) -> make root_x the new parent of root_y
+            parent[root_y] = root_x
+            subtree_sizes[root_x] += subtree_sizes[root_y]
+        
 
     # Q5.4 — MST_Kruskal (15 points autograder / 5 points manual grading)
     # Find the Minimum Spanning Tree using Kruskal's algorithm.
@@ -322,7 +340,30 @@ class Graph:
     # Interaction: <description of how the AI tool was used, e.g., prompts given>
     # Verification: <how you verified the correctness of the AI-generated code>
     def MST_Kruskal(self):
-        pass
+        result = []
+
+        # Sort edges by weight
+        self.m_graph.sort(key=lambda edge: edge[2])
+
+        # Initialize Union Find structure
+        parent = [i for i in range(self.m_num_of_nodes)]
+        subtree_sizes = [1] * self.m_num_of_nodes
+
+        for edge in self.m_graph:
+            u, v, w = edge[0], edge[1], edge[2]
+            root_u = self.find_subtree(parent, u)
+            root_v = self.find_subtree(parent, v)
+
+            if root_u != root_v:
+                # If u and v are in different subtrees, connect them and add the edge to the result
+                self.connect_subtrees(parent, subtree_sizes, u, v)
+                result.append([u, v])
+            
+            if len(result) == self.m_num_of_nodes - 1:
+                # We need exactly n-1 edges for the MST
+                break
+    
+        return result
 
 
 # ============================================================================
