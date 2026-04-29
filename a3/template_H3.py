@@ -55,6 +55,9 @@ class DGraph:
 # Interaction: <Asked if I would have to create a helper function in order to call, or if there was one pre-implemented that I could use.>
 # Verification: <I was able to check around the file and realize that there was no helper function, so I created one called dfs. I also verified the correctness of the code by testing it on a small graph and comparing the output to the expected DFS order.>
 def q1_1(graph: UGraph, N):
+    # Raise recursion limit to handle deep graphs (long chains)
+    sys.setrecursionlimit(10**6)
+
     # Track the visited status of each vertex
     visited = [False] * N
 
@@ -71,9 +74,12 @@ def q1_1(graph: UGraph, N):
             if not visited[neighbor]:
                 # Explore that neighbor recursively
                 dfs(neighbor)
-    
-    # Start DFS from 0 (As specified)
-    dfs(0)
+
+    # Start DFS from 0, then continue from any unvisited vertex
+    # so that isolated/disconnected components are also explored
+    for start in range(N):
+        if not visited[start]:
+            dfs(start)
 
     return result
     
@@ -116,9 +122,12 @@ def q1_2(graph: UGraph, N):
                 for neighbor in reversed(graph.adjList[current_vertex]):
                     if not visited[neighbor]:
                         stack.append(neighbor)
-    
-    # Start DFS from 0 (As specified)
-    dfs(0)
+
+    # Start DFS from 0, then continue from any unvisited vertex
+    # so that isolated/disconnected components are also explored
+    for start in range(N):
+        if not visited[start]:
+            dfs(start)
 
     return result
 
@@ -194,13 +203,27 @@ def q2(graph: UGraph, N):
 # Interaction: <I asked it to help me understand how I can re-use the existing DFS function from Q1.1 , and help me implement it.>
 # Verification: <I tested the code on a small directed graph and checked if the output correctly identified whether the graph was strongly connected or not, which confirmed that the implementation was correct.>
 def q3(graph: DGraph, N):
-    # Check if everyone is reachable FROM node 0 in original graph
-    result1 = q1_1(graph, N) # Reuse 1.1
+    # Iterative single-source DFS that counts how many vertices are
+    # reachable from node 0. Uses its own DFS (not q1_1) because q1_1
+    # also explores disconnected components, which would mask the check.
+    def reachable_from_zero(g):
+        visited = [False] * N
+        stack = [0]
+        while stack:
+            u = stack.pop()
+            if visited[u]:
+                continue
+            visited[u] = True
+            for v in g.adjList[u]:
+                if not visited[v]:
+                    stack.append(v)
+        return sum(visited)
 
-    if len(result1) != N:
+    # All vertices must be reachable from node 0 in the original graph
+    if reachable_from_zero(graph) != N:
         return False
-    
-    # Build the transpose
+
+    # Build the transpose (reverse every directed edge)
     reversed_edges = []
     for u in range(N):
         for v in graph.adjList[u]:
@@ -208,12 +231,12 @@ def q3(graph: DGraph, N):
 
     reversed_graph = DGraph(reversed_edges, N)
 
-    # Check if everyone is reachable FROM node 0 in reversed graph
-    result2 = q1_1(reversed_graph, N) # Reuse 1.1
-    if len(result2) != N:
+    # All vertices must also be reachable from node 0 in the transpose,
+    # which is equivalent to node 0 being reachable from every vertex
+    if reachable_from_zero(reversed_graph) != N:
         return False
-    
-    # Both Conditions satisfied, so the graph is strongly connected
+
+    # Both conditions satisfied, so the graph is strongly connected
     return True
 
 
@@ -393,21 +416,17 @@ class Graph:
 def q6(input):
     # Parse the header row
     N = input[0][0]
-    M = input[0][1]
 
-    # Build the adjacent list
+    # Build the adjacent list (1-indexed: buildings are numbered 1..N)
     adj = [[] for _ in range(N + 1)]
 
     total_road_cost = 0
 
-    all_buildings = set()
-
-    # Parse all M roads
-    for i in range(1, M+1):
+    # Parse every road row that's actually in the input. We don't trust
+    # input[0][1] (M) because the row count and the declared M can differ
+    for i in range(1, len(input)):
         a, b, c = input[i][0], input[i][1], input[i][2]
         adj[a].append((b, c))
-        all_buildings.add(a)
-        all_buildings.add(b)
         adj[b].append((a, c))
         total_road_cost += c
 
@@ -431,11 +450,13 @@ def q6(input):
         for (neighbor, edge_cost) in adj[u]:
             if neighbor not in visited:
                 heapq.heappush(min_heap, (edge_cost, neighbor))
-        
-    if len(visited) < len(all_buildings):
+
+    # Compare against N (total buildings), not edge-incident buildings:
+    # a building with zero roads is still a building that needs to be reached
+    if len(visited) < N:
         return -1
 
-    return total_road_cost - mst_cost 
+    return total_road_cost - mst_cost
 
 
 # ============================================================================
@@ -465,7 +486,12 @@ def q6(input):
 # Verification: <I tested the code on a small graph and compared the output to the expected result, which confirmed that the implementation was correct.>
 def q7(input):
     N = input[0][0]
-    K = input[0][1]
+    # Tolerate inputs where K is omitted (e.g. the single-node case)
+    K = input[0][1] if len(input[0]) > 1 else 0
+
+    # 0 or 1 person trivially has no failing pair, so the criterion holds
+    if N <= 1:
+        return "Small World!"
 
     # Build adjacency list
     adj = [[] for _ in range(N + 1)]
