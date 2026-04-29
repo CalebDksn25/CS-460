@@ -190,9 +190,9 @@ def q2(graph: UGraph, N):
 #
 # Include comments on key lines of code to demonstrate your comprehension.
 #
-# AI Tool Used: <tool name or "None">
-# Interaction: <description of how the AI tool was used, e.g., prompts given>
-# Verification: <how you verified the correctness of the AI-generated code>
+# AI Tool Used: <Claude Opus 4.7>
+# Interaction: <I asked it to help me understand how I can re-use the existing DFS function from Q1.1 , and help me implement it.>
+# Verification: <I tested the code on a small directed graph and checked if the output correctly identified whether the graph was strongly connected or not, which confirmed that the implementation was correct.>
 def q3(graph: DGraph, N):
     # Check if everyone is reachable FROM node 0 in original graph
     result1 = q1_1(graph, N) # Reuse 1.1
@@ -231,9 +231,9 @@ def q3(graph: DGraph, N):
 #
 # Include comments on key lines of code to demonstrate your comprehension.
 #
-# AI Tool Used: <tool name or "None">
-# Interaction: <description of how the AI tool was used, e.g., prompts given>
-# Verification: <how you verified the correctness of the AI-generated code>
+# AI Tool Used: <Claude Opus 4.7>
+# Interaction: <I was having an error where the return statement was broken, because I was trying to return it just as reversed without surounding it as a list. I asked it to point me out where I went wrong and it helped me realize that I needed to wrap the reversed function in a list to get the correct output.>
+# Verification: <I tested the code on a small DAG and compared the output to the expected topological order, which confirmed that the implementation was correct.>
 def q4(graph: DGraph, n):
     # Track the visited status of each vertex
     visited = [False] * n
@@ -310,7 +310,7 @@ class Graph:
     # subtree_sizes -> list, number of nodes in each subtree
     # x, y          -> integers, nodes whose subtrees to connect
     #
-    # AI Tool Used: <tool name or "None">
+    # AI Tool Used: <None>
     # Interaction: <description of how the AI tool was used, e.g., prompts given>
     # Verification: <how you verified the correctness of the AI-generated code>
     def connect_subtrees(self, parent, subtree_sizes, x, y):
@@ -337,9 +337,9 @@ class Graph:
     #
     # Ex: (graph from Figure 1 in assignment) → [[2,5],[4,5],[3,4],[5,7],[0,1],[6,8],[3,6],[0,2]]
     #
-    # AI Tool Used: <tool name or "None">
-    # Interaction: <description of how the AI tool was used, e.g., prompts given>
-    # Verification: <how you verified the correctness of the AI-generated code>
+    # AI Tool Used: <Claude Opus 4.7>
+    # Interaction: <I asked it how I am supposed to sort edges by weight without having to create an entire new function and it suggested to use a lambda function as the key in the sort method, which I implemented. I also asked it to explain the overall steps of Kruskal's algorithm and it provided a clear explanation of how it works.>
+    # Verification: <I tested the code on a small graph and compared the output to the expected MST edges, which confirmed that the implementation was correct.>
     def MST_Kruskal(self):
         result = []
 
@@ -387,9 +387,9 @@ class Graph:
 #
 # Include comments on key lines of code to demonstrate your comprehension.
 #
-# AI Tool Used: <tool name or "None">
-# Interaction: <description of how the AI tool was used, e.g., prompts given>
-# Verification: <how you verified the correctness of the AI-generated code>
+# AI Tool Used: <Claude Opus 4.7>
+# Interaction: <I asked it how I an supposed to implement Prim's algorithm and it provided a clear explanation of the steps involved. I also asked it to help me understand how to build the adjacency list from the input and it guided me through the process.>
+# Verification: <I tested the code on a small graph and compared the output to the expected savings, which confirmed that the implementation was correct.>
 def q6(input):
     # Parse the header row
     N = input[0][0]
@@ -460,11 +460,42 @@ def q6(input):
 #
 # Include comments on key lines of code to demonstrate your comprehension.
 #
-# AI Tool Used: <tool name or "None">
-# Interaction: <description of how the AI tool was used, e.g., prompts given>
-# Verification: <how you verified the correctness of the AI-generated code>
+# AI Tool Used: <Claude Opus 4.7>
+# Interaction: <I asked it to help me understand the BFS from each person part, specifically the while queue part, and checking distance from everyone else part. It provided a clear explanation of how to implement BFS from each node and how to check the distances to ensure that they are within 6 steps.>
+# Verification: <I tested the code on a small graph and compared the output to the expected result, which confirmed that the implementation was correct.>
 def q7(input):
-    pass
+    N = input[0][0]
+    K = input[0][1]
+
+    # Build adjacency list
+    adj = [[] for _ in range(N + 1)]
+    for i in range(1, K+1):
+        a, b = input[i][0], input[i][1]
+        adj[a].append(b)
+        adj[b].append(a)
+    
+    # BFS From each person
+    for start in range(1, N+1):
+        dist = [-1] * (N + 1) # -1 means unvisited
+        dist[start] = 0
+        queue = deque([start])
+
+        while queue:
+            u = queue.popleft()
+            for neighbor in adj[u]:
+                if dist[neighbor] == -1: # Unvisited
+                    dist[neighbor] = dist[u] + 1
+                    queue.append(neighbor)
+        
+        # Check distances to everyone else
+        for person in range(1, N+1):
+            if person == start:
+                continue
+            if dist[person] == -1 or dist[person] > 6:
+                return "Big World!"
+    
+    return "Small World!"
+
 
 
 # ============================================================================
