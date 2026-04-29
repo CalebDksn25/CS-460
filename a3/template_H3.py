@@ -234,7 +234,31 @@ def q3(graph: DGraph, N):
 # Interaction: <description of how the AI tool was used, e.g., prompts given>
 # Verification: <how you verified the correctness of the AI-generated code>
 def q4(graph: DGraph, n):
-    pass
+    # Track the visited status of each vertex
+    visited = [False] * n
+    # List to store the vertices in post-order
+    finished_order = []
+
+    def dfs(vertex):
+        # Mark the current vertex as visited
+        visited[vertex] = True
+
+        for neighbor in graph.adjList[vertex]:
+            # Check if the neighbor is visited or not yet
+            if not visited[neighbor]:
+                # Explore that neighbor recursively
+                dfs(neighbor)
+        
+        # After visiting all neighbors, add the vertex to finished_order
+        finished_order.append(vertex)
+
+    # Perform DFS from each unvisited vertex to cover all components
+    for u in range(n):
+        if not visited[u]:
+            dfs(u)
+
+    return list(reversed(finished_order)) # Reverse post-order gives topological order
+
 
 
 # ============================================================================
