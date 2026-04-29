@@ -6,6 +6,7 @@ import numpy as np
 from timeit import default_timer as timer
 from collections import deque
 import sys
+import heapq
 
 ### PREDEFINED CLASSES - DO NOT EDIT ###
 
@@ -390,7 +391,51 @@ class Graph:
 # Interaction: <description of how the AI tool was used, e.g., prompts given>
 # Verification: <how you verified the correctness of the AI-generated code>
 def q6(input):
-    pass
+    # Parse the header row
+    N = input[0][0]
+    M = input[0][1]
+
+    # Build the adjacent list
+    adj = [[] for _ in range(N + 1)]
+
+    total_road_cost = 0
+
+    all_buildings = set()
+
+    # Parse all M roads
+    for i in range(1, M+1):
+        a, b, c = input[i][0], input[i][1], input[i][2]
+        adj[a].append((b, c))
+        all_buildings.add(a)
+        all_buildings.add(b)
+        adj[b].append((a, c))
+        total_road_cost += c
+
+    # Prim's Algorithm
+    visited = set()
+    min_heap = []
+    mst_cost = 0
+
+    # Start at node 1
+    heapq.heappush(min_heap, (0, 1)) # (cost, node)
+
+    while min_heap:
+        cost, u = heapq.heappop(min_heap)
+
+        if u in visited:
+            continue
+
+        visited.add(u)
+        mst_cost += cost
+
+        for (neighbor, edge_cost) in adj[u]:
+            if neighbor not in visited:
+                heapq.heappush(min_heap, (edge_cost, neighbor))
+        
+    if len(visited) < len(all_buildings):
+        return -1
+
+    return total_road_cost - mst_cost 
 
 
 # ============================================================================
